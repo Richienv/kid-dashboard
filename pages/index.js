@@ -258,35 +258,51 @@ function HealthPage({ data }) {
 }
 
 function SkillsPage({ skills, memory }) {
+  const [hint, setHint] = useState('');
+  const handleRefresh = (skill) => {
+    const command = skill.refreshCommand || `codex exec -- "cd ../skills/${skill.name} && git pull"`;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(command);
+      setHint(`Copied refresh command for ${skill.name}`);
+      setTimeout(() => setHint(''), 2500);
+      return;
+    }
+    setHint(`Copy this command: ${command}`);
+  };
   return (
     <section className="skills-view animation-fade">
       <div className="skills-grid">
         <div className="skills-list-card">
-          <h3>Skills</h3>
-          <p className="page-desc">Install, search, and review community skills.</p>
-          <div className="search-box"><span>🔍</span><input type="text" placeholder="Search installed skills..." /></div>
-          <div className="skill-list">
-            {skills.map((s) => (
-              <div key={s.name} className="skill-item">
-                <div className="skill-icon">{s.icon || '🧠'}</div>
-                <div className="skill-info">
-                  <div className="skill-title">
-                    <strong>{s.name}</strong>
-                    <span className="rating">★ {s.rating}</span>
-                  </div>
-                  <p>{s.desc}</p>
-                  <div className="skill-meta">
-                    <span>↓ {s.downloads}</span>
-                    <span>⏱ {s.updated}</span>
+          <div className="skills-card-header">
+            <div>
+              <h3>Skills</h3>
+              <p className="page-desc">Install, inspect, and refresh the skills powering Kid.</p>
+            </div>
+            <div className="skills-card-actions">
+              <span className="hint-text">{hint}</span>
+            </div>
+          </div>
+          <div className="skill-list-grid">
+            {skills.map((skill) => (
+              <article key={skill.name} className="skill-card">
+                <div className="skill-card-main">
+                  <div className="skill-icon">{skill.icon || '🧠'}</div>
+                  <div>
+                    <strong>{skill.name}</strong>
+                    <p>{skill.desc}</p>
+                    <div className="skill-meta">
+                      <span className="meta-pill">{skill.status === 'aktif' ? 'Live' : 'Butuh update'}</span>
+                      <span>★ {skill.rating}</span>
+                      <span>{skill.downloads}</span>
+                    </div>
                   </div>
                 </div>
-                <button className="install-btn">Install →</button>
-              </div>
+                <div className="skill-card-footer">
+                  <span>Updated {skill.lastUpdated}</span>
+                  <button className="refresh-btn" onClick={() => handleRefresh(skill)}>Copy refresh</button>
+                </div>
+              </article>
             ))}
-          </div>
-          <div className="skills-footer">
-            <span>{skills.length} skills available</span>
-            <button>Browse marketplace →</button>
           </div>
         </div>
         <div className="memory-card">
@@ -563,6 +579,23 @@ body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(-
   .skills-index-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
   .skill-chip-row { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
   .skill-chip { padding: 0.35rem 0.9rem; border-radius: 999px; background: #f1f5f9; font-size: 0.8rem; color: #475569; border: 1px solid transparent; font-weight: 600; }
+
+  .skills-card-header { display: flex; justify-content: space-between; align-items: baseline; }
+  .skills-card-header h3 { margin: 0; }
+  .hint-text { font-size: 0.75rem; color: #64748b; }
+  .skill-list-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .skill-card { background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .skill-card-main { display: flex; gap: 0.75rem; }
+  .skill-icon { width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+  .skill-card-main strong { font-size: 1rem; color: var(--ink-blue); }
+  .skill-card-main p { margin: 0.25rem 0; font-size: 0.8rem; color: #64748b; }
+  .skill-meta { display: flex; gap: 0.75rem; font-size: 0.75rem; color: #475569; }
+  .skill-meta .meta-pill { padding: 0.15rem 0.6rem; border-radius: 999px; background: #edeff5; }
+  .skill-card-footer { display: flex; justify-content: space-between; font-size: 0.75rem; color: #64748b; align-items: center; }
+  .skill-status.live { color: #10b981; }
+  .skill-status.paused { color: #ef4444; }
+  .refresh-btn { background: none; border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.4rem 0.8rem; font-size: 0.75rem; cursor: pointer; color: var(--ink-blue); }
+  @media (max-width: 900px) { .skill-card { padding: 1rem; } }
 
 /* Scheduler */
 .scheduler-view { }
