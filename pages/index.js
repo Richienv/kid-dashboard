@@ -54,7 +54,7 @@ export default function Home(props) {
           </header>
 
           <div className="workspace-content">
-            {activeSection === 'overview' && <OverviewPage data={overview} trace={decisionTrace} logs={chatLogs} activeSkills={activeSkills} />}
+            {activeSection === 'overview' && <OverviewPage data={overview} trace={decisionTrace} logs={chatLogs} activeSkills={activeSkills} buddyLog={overview.buddyLog} thesisSummary={overview.thesisSummary} />}
             {activeSection === 'usage' && <UsagePage data={usage} />}
             {activeSection === 'health' && <HealthPage data={health} />}
             {activeSection === 'skills' && <SkillsPage skills={skills} memory={memory} activeSkills={activeSkills} />}
@@ -68,7 +68,7 @@ export default function Home(props) {
   );
 }
 
-function OverviewPage({ data = {}, trace = [], logs = [], activeSkills = [] }) {
+function OverviewPage({ data = {}, trace = [], logs = [], activeSkills = [], buddyLog = [], thesisSummary = '' }) {
   const hero = data.hero || {};
   const metrics = data.metrics || [];
   const liveEvents = data.liveEvents || [];
@@ -111,6 +111,23 @@ function OverviewPage({ data = {}, trace = [], logs = [], activeSkills = [] }) {
       </div>
 
 
+
+      <div className="buddy-panel">
+        <div className="panel-header"><h4>Buddy check-ins</h4></div>
+        {buddyLog.length ? (
+          <ul className="buddy-log-list">
+            {buddyLog.map((entry, idx) => (
+              <li key={idx}>{entry}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted">No check-ins logged yet.</p>
+        )}
+      </div>
+      <div className="thesis-panel">
+        <div className="panel-header"><h4>Thesis tracker snapshot</h4></div>
+        <pre className="thesis-summary">{thesisSummary || 'No thesis notes yet.'}</pre>
+      </div>
       <div className="active-skills-panel">
         <div className="panel-header"><h4>Active Skills</h4><span className="live-badge">● Live</span></div>
         <div className="active-skills-list">
@@ -378,6 +395,11 @@ body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(-
 
   .active-skills-panel { background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1rem; }
   .active-skills-list { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.buddy-panel, .thesis-panel { background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.buddy-log-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.buddy-log-list li { font-size: 0.8rem; color: #1e293b; }
+.thesis-summary { background: #f8fafc; border-radius: 0.75rem; padding: 0.75rem; font-size: 0.75rem; color: #1e293b; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
+
   .active-skill-chip { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; border-radius: 999px; background: #f8fafc; font-size: 0.8rem; }
   .active-icon { font-size: 1rem; }
   .skills-card-header { display: flex; justify-content: space-between; align-items: baseline; }
