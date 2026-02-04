@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kid Dashboard</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: "Inter", system-ui, sans-serif;
+      background: #020309;
+      color: #f4f5fb;
+    }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 2.5rem 1.5rem 3rem;
+      background: radial-gradient(circle at top, #1b1f3a, #03050b 55%);
+    }
+    .container {
+      max-width: 1080px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(2.4rem, 4vw, 3.5rem);
+    }
+    .tag {
+      align-self: flex-start;
+      padding: 0.35rem 0.95rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      letter-spacing: 0.2em;
+      font-size: 0.85rem;
+    }
+    .intro {
+      color: rgba(244,245,251,0.7);
+      margin: 0;
+      font-size: 1rem;
+    }
+    .grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+    .cards {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+    .card {
+      border-radius: 1.4rem;
+      padding: 1.6rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+    }
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 0.8rem;
+      font-size: 1.3rem;
+    }
+    .list,
+    .timeline {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+    .list li,
+    .timeline li {
+      background: rgba(255,255,255,0.04);
+      border-radius: 1rem;
+      padding: 0.85rem 1rem;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .list li strong {
+      display: block;
+      font-size: 0.95rem;
+    }
+    .commands {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .command {
+      padding: 0.9rem 1rem;
+      border-radius: 1rem;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 0.95rem;
+    }
+    .statement {
+      color: rgba(244,245,251,0.7);
+      font-size: 0.95rem;
+    }
+    .link-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 1rem;
+      padding: 0.9rem 1.5rem;
+      border-radius: 999px;
+      background: linear-gradient(120deg, #ff7c6b, #f05c8a);
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .legend {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.6);
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="tag">Kid Dashboard</span>
+      <h1>Kid Control Center</h1>
+      <p class="intro">Satu halaman untuk Richie monitor Memori & tugas, kirim banget ke Codex/sub-agent, lalu lihat riwayat dan titik aksi dalam satu tautan live.</p>
+    </header>
+
+    <div class="grid cards">
+      <div class="card">
+        <h2>Memory Radar</h2>
+        <ul class="list">
+          <li>
+            <strong>GMBA Thesis</strong>
+            Struktur thesis masih jadi prioritas utama—siapkan research notes, distil key questions, catat progress harian.
+          </li>
+          <li>
+            <strong>AI Products</strong>
+            ERP + landing pages (Framer) bergerak cepat; gunakan Codex untuk prototyping, review, lalu deploy.
+          </li>
+          <li>
+            <strong>Chinese Routine</strong>
+            Progress bahasa dapat dituliskan ke Notion / memory log, jadi bisa dilacak tiap sesi.
+          </li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Task Pipeline</h2>
+        <ul class="list">
+          <li>
+            <strong>Terakhir</strong>
+            Restart halaman Kid Dashboard, siap jadi tempat referensi action log dan otomatisasi Codex.</li>
+          <li>
+            <strong>Sekarang</strong>
+            Monitor ringkasan aktivitas Codex + sub-agent via bagian Command Kit atau timeline di bawah.
+          </li>
+          <li>
+            <strong>Selanjutnya</strong>
+            Instruksikan terus: deploy, buat ringkasan harian, audit memory log, update Notion - semua lewat satu dashboard ini.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2>Command Kit untuk Richie</h2>
+      <div class="commands">
+        <div class="command">codex exec -- &lt;shell command&gt;  <span class="legend">(jalankan skrip apa pun; npm, ls, generate prompt, deploy CLI, dll.)</span></div>
+        <div class="command">codex exec -- vercel deploy --prod  <span class="legend">(deploy instant ke URL live yang kamu cek setiap pagi)</span></div>
+        <div class="command">codex review  <span class="legend">(minta Codex jelasin diff sebelum kamu setujui)</span></div>
+        <div class="command">codex apply  <span class="legend">(terima patch/automated change dan langsung masuk kerja)</span></div>
+        <div class="command">codex exec status / codex login status  <span class="legend">(verifikasi autentikasi + baca file memory/HEARTBEAT setiap mulai sesi)</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Activity Log & story</h2>
+      <ul class="timeline">
+        <li>
+          Kid dashboard sekarang jadi home base; saya catat stdout Codex + message log setiap kali deploy langsung di Notion kalau kamu minta.
+        </li>
+        <li>
+          Timeline update: setiap perintah Codex (build, review, deploy) bisa disalin ke log harian agar kamu tahu “apa, siapa, kapan”.
+        </li>
+        <li>
+          Live link di bawah ini jadi satu-satunya dashboard yang kamu butuh buka untuk lihat memory, tugas, dan hasil deploy terbaru.
+        </li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Kid link utama</h2>
+      <p class="statement">Buka link ini kapan pun Richie perlu cek memory, ringkasan tugas, atau hasil deploy—semua sudah digabung ke dashboard bernama Kid.</p>
+      <a class="link-cta" href="https://workspace-r9ax9k61m-richies-projects-6f212435.vercel.app" target="_blank">Kid Dashboard live</a>
+      <p class="legend">Kalau perlu tambahan section (task history, log eksport, Notion sync), tinggal bilang dan saya tambahkan otomatis.</p>
+    </section>
+  </div>
+</body>
+</html>
