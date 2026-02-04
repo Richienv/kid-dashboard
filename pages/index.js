@@ -26,9 +26,9 @@ export default function Home({ statuses, files, timeline }) {
           </div>
           <nav className="nav">
             {navSections.map((entry) => (
-              <a
+              <button
                 key={entry.key}
-                href={`#${entry.key}`}
+                type="button"
                 className={activeSection === entry.key ? 'nav-link active' : 'nav-link'}
                 onClick={() => setActiveSection(entry.key)}
               >
@@ -36,7 +36,7 @@ export default function Home({ statuses, files, timeline }) {
                   {entry.icon}
                 </span>
                 <span className="label">{entry.label}</span>
-              </a>
+              </button>
             ))}
             <a
               href="https://vercel-demo-two-jet.vercel.app"
@@ -100,8 +100,7 @@ export default function Home({ statuses, files, timeline }) {
       </div>
       <style jsx>{`
         .app {
-          display: grid;
-          grid-template-columns: 60px 1fr;
+          display: flex;
           min-height: 100vh;
         }
         .sidebar {
@@ -110,9 +109,11 @@ export default function Home({ statuses, files, timeline }) {
           padding: 2rem 0.75rem;
           display: flex;
           flex-direction: column;
-          gap: 1.2rem;
-          transition: width 0.3s ease;
+          gap: 1rem;
+          min-width: 60px;
+          max-width: 260px;
           width: 60px;
+          transition: width 0.35s ease;
           overflow: hidden;
         }
         .sidebar:hover {
@@ -125,13 +126,23 @@ export default function Home({ statuses, files, timeline }) {
         .sidebar:hover .brand {
           opacity: 1;
         }
+        h1,
+        h2,
+        strong {
+          font-weight: 400;
+        }
         .logo {
           font-size: 1rem;
           letter-spacing: 0.4em;
-          font-weight: 600;
+          font-weight: 400;
           text-transform: uppercase;
           color: #7ee5ff;
           margin: 0;
+        }
+        .intro {
+          color: rgba(255,255,255,0.65);
+          font-size: 0.88rem;
+          margin: 0.2rem 0 0;
         }
         .nav {
           list-style: none;
@@ -150,15 +161,20 @@ export default function Home({ statuses, files, timeline }) {
           align-items: center;
           gap: 0.7rem;
           transition: background 0.2s ease;
+          background: transparent;
+          border: none;
+          cursor: pointer;
         }
         .nav-link .label {
           opacity: 0;
-          transition: opacity 0.3s ease;
+          white-space: nowrap;
+          font-weight: 400;
         }
         .sidebar:hover .nav-link .label {
           opacity: 1;
         }
-        .nav-link.active {
+        .nav-link.active,
+        .nav-link:hover {
           background: rgba(255,255,255,0.12);
           color: #ffffff;
         }
@@ -166,22 +182,21 @@ export default function Home({ statuses, files, timeline }) {
           font-size: 1.2rem;
         }
         .main {
+          flex: 1;
           padding: 1.5rem 2rem;
           display: flex;
           flex-direction: column;
           gap: 1.5rem;
+          transition: margin-left 0.35s ease;
         }
         .topbar {
           display: flex;
           justify-content: space-between;
           align-items: center;
         }
-        .topbar h1 {
-          margin: 0;
-          font-size: clamp(2rem, 3vw, 3rem);
-        }
-        small {
+        .topbar small {
           color: rgba(255,255,255,0.6);
+          display: block;
         }
         .menu {
           display: flex;
@@ -195,7 +210,7 @@ export default function Home({ statuses, files, timeline }) {
           color: white;
           padding: 0.45rem 1rem;
           cursor: pointer;
-          font-weight: 600;
+          font-weight: 400;
           transition: background 0.2s ease;
         }
         .top-btn.active,
@@ -212,6 +227,7 @@ export default function Home({ statuses, files, timeline }) {
         .panel h2 {
           margin-top: 0;
           font-size: 1.4rem;
+          font-weight: 400;
         }
         .status-grid,
         .files {
@@ -230,9 +246,9 @@ export default function Home({ statuses, files, timeline }) {
         }
         .status-card strong,
         .file-card strong {
-          color: #7ee5ff;
           display: block;
           margin-bottom: 0.35rem;
+          color: #7ee5ff;
         }
         .timeline {
           display: flex;
@@ -256,8 +272,12 @@ export default function Home({ statuses, files, timeline }) {
           padding: 0.9rem 1.3rem;
           background: linear-gradient(120deg,#ff7c6b,#f05c8a);
           color: white;
-          font-weight: 600;
+          font-weight: 400;
           text-decoration: none;
+        }
+        .legend {
+          font-size: 0.85rem;
+          color: rgba(255,255,255,0.6);
         }
         footer {
           font-size: 0.85rem;
@@ -265,22 +285,23 @@ export default function Home({ statuses, files, timeline }) {
         }
         @media (max-width: 900px) {
           .app {
-            grid-template-columns: 1fr;
+            flex-direction: column;
           }
           .sidebar {
+            width: 100%;
             flex-direction: row;
             flex-wrap: wrap;
-            width: 100%;
-            justify-content: space-between;
-          }
-          .sidebar:hover {
-            width: 100%;
           }
           .brand {
             opacity: 1;
           }
-          .sidebar:hover .nav-link .label {
-            opacity: 1;
+          .nav {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+          }
+          .nav-link {
+            min-width: 120px;
           }
         }
       `}</style>
