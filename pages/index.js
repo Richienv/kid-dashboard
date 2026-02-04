@@ -13,7 +13,7 @@ const navSections = [
 
 export default function Home(props) {
   const [activeSection, setActiveSection] = useState('overview');
-  const { overview, usage, health, skills, memory, scheduler, security, biometrics, decisionTrace, chatLogs } = props;
+  const { overview, usage, health, skills, memory, scheduler, security, biometrics, decisionTrace, chatLogs, activeSkills } = props;
 
   return (
     <>
@@ -54,10 +54,10 @@ export default function Home(props) {
           </header>
 
           <div className="workspace-content">
-            {activeSection === 'overview' && <OverviewPage data={overview} trace={decisionTrace} logs={chatLogs} />}
+            {activeSection === 'overview' && <OverviewPage data={overview} trace={decisionTrace} logs={chatLogs} activeSkills={activeSkills} />}
             {activeSection === 'usage' && <UsagePage data={usage} />}
             {activeSection === 'health' && <HealthPage data={health} />}
-            {activeSection === 'skills' && <SkillsPage skills={skills} memory={memory} />}
+            {activeSection === 'skills' && <SkillsPage skills={skills} memory={memory} activeSkills={activeSkills} />}
             {activeSection === 'scheduler' && <SchedulerPage data={scheduler} />}
             {activeSection === 'security' && <SecurityPage data={security} />}
           </div>
@@ -68,7 +68,7 @@ export default function Home(props) {
   );
 }
 
-function OverviewPage({ data = {}, trace = [], logs = [] }) {
+function OverviewPage({ data = {}, trace = [], logs = [], activeSkills = [] }) {
   const hero = data.hero || {};
   const metrics = data.metrics || [];
   const liveEvents = data.liveEvents || [];
@@ -110,6 +110,21 @@ function OverviewPage({ data = {}, trace = [], logs = [] }) {
         </div>
       </div>
 
+
+      <div className="active-skills-panel">
+        <div className="panel-header"><h4>Active Skills</h4><span className="live-badge">● Live</span></div>
+        <div className="active-skills-list">
+          {activeSkills.length ? activeSkills.map((skill) => (
+            <div key={skill.name} className="active-skill-chip">
+              <span className="active-icon">{skill.icon || '🧠'}</span>
+              <div className="active-skill-meta">
+                <strong>{skill.name}</strong>
+                <span>{skill.lastSeen}</span>
+              </div>
+            </div>
+          )) : <p className="muted">No skills currently driving action.</p>}
+        </div>
+      </div>
       <div className="console-grid">
         <div className="terminal-panel">
           <div className="panel-header">
@@ -257,8 +272,9 @@ function HealthPage({ data }) {
   );
 }
 
-function SkillsPage({ skills, memory }) {
+function SkillsPage({ skills, memory, activeSkills }) {
   const [hint, setHint] = useState('');
+  const activeNames = new Set(activeSkills.map((skill) => skill.name));
   const handleRefresh = (skill) => {
     const command = skill.refreshCommand || `codex exec -- "cd ../skills/${skill.name} && git pull"`;
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -282,27 +298,32 @@ function SkillsPage({ skills, memory }) {
               <span className="hint-text">{hint}</span>
             </div>
           </div>
+          <div className="search-box"><span>🔍</span><input type="text" placeholder="Search installed skills..." /></div>
           <div className="skill-list-grid">
-            {skills.map((skill) => (
-              <article key={skill.name} className="skill-card">
-                <div className="skill-card-main">
-                  <div className="skill-icon">{skill.icon || '🧠'}</div>
-                  <div>
-                    <strong>{skill.name}</strong>
-                    <p>{skill.desc}</p>
-                    <div className="skill-meta">
-                      <span className="meta-pill">{skill.status === 'aktif' ? 'Live' : 'Butuh update'}</span>
-                      <span>★ {skill.rating}</span>
-                      <span>{skill.downloads}</span>
+            {skills.map((skill) => {
+              const isLive = activeNames.has(skill.name);
+              const statusLabel = isLive ? 'Live now' : skill.status === 'aktif' ? 'Active' : 'Needs update';
+              return (
+                <article key={skill.name} className={`skill-card ${isLive ? 'active-skill-card' : ''}`}>
+                  <div className="skill-card-main">
+                    <div className="skill-icon">{skill.icon || '🧠'}</div>
+                    <div>
+                      <strong>{skill.name}</strong>
+                      <p>{skill.desc}</p>
+                      <div className="skill-meta">
+                        <span className={`meta-pill ${isLive ? 'skill-status-live' : 'skill-status'}`}>{statusLabel}</span>
+                        <span>★ {skill.rating}</span>
+                        <span>↓ {skill.downloads}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="skill-card-footer">
-                  <span>Updated {skill.lastUpdated}</span>
-                  <button className="refresh-btn" onClick={() => handleRefresh(skill)}>Copy refresh</button>
-                </div>
-              </article>
-            ))}
+                  <div className="skill-card-footer">
+                    <span>Updated {skill.lastUpdated}</span>
+                    <button className="refresh-btn" onClick={() => handleRefresh(skill)}>Copy refresh</button>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
         <div className="memory-card">
@@ -354,6 +375,26 @@ body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(-
 .dot.green { background: #10b981; }
 .animation-fade { animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .active-skills-panel { background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .active-skills-list { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .active-skill-chip { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; border-radius: 999px; background: #f8fafc; font-size: 0.8rem; }
+  .active-icon { font-size: 1rem; }
+  .skills-card-header { display: flex; justify-content: space-between; align-items: baseline; }
+  .skills-card-actions { display: flex; align-items: center; }
+  .hint-text { font-size: 0.75rem; color: #64748b; }
+  .skill-list-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+  .skill-card { background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .skill-card-main { display: flex; gap: 0.75rem; }
+  .skill-icon { width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+  .skill-card-main strong { font-size: 1rem; color: var(--ink-blue); }
+  .skill-card-main p { margin: 0.25rem 0; font-size: 0.8rem; color: #64748b; }
+  .skill-meta { display: flex; gap: 0.75rem; font-size: 0.75rem; color: #475569; }
+  .meta-pill { padding: 0.15rem 0.6rem; border-radius: 999px; background: #edeff5; }
+  .skill-status-live { background: #dcfce7; color: #15803d; }
+  .skill-card-footer { display: flex; justify-content: space-between; font-size: 0.75rem; color: #64748b; align-items: center; }
+  .refresh-btn { background: none; border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.35rem 0.9rem; font-size: 0.75rem; cursor: pointer; color: var(--ink-blue); }
+  @media (max-width: 900px) { .skill-card { padding: 1rem; } }
 
 /* Overview - New Insightful Layout */
 .overview-view-new { display: flex; flex-direction: column; gap: 1.5rem; animation: fadeIn 0.3s ease-out; }
