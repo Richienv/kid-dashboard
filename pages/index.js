@@ -1,5 +1,6 @@
 import Head from 'next/head';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { buildWorkspaceData } from '../lib/workspace-data';
 
 const navSections = [
   { key: 'overview', label: 'Overview' },
@@ -667,6 +668,6 @@ body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(-
 `;
 
 export async function getStaticProps() {
-  const data = await import('../data/workspace');
-  return { props: data.workspaceData };
+  const data = buildWorkspaceData();
+  return { props: data };
 }
