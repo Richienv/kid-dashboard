@@ -264,11 +264,30 @@ function SkillsPage({ skills, memory }) {
         <div className="skills-list-card">
           <h3>Skills</h3>
           <p className="page-desc">Install, search, and review community skills.</p>
-          <div className="search-box"><span>🔍</span><input type="text" placeholder="Search 500+ skills..." /></div>
+          <div className="search-box"><span>🔍</span><input type="text" placeholder="Search installed skills..." /></div>
           <div className="skill-list">
-            {skills.map(s => <div key={s.name} className="skill-item"><div className="skill-icon">{s.icon === 'mail' ? '✉️' : s.icon === 'calendar' ? '📅' : s.icon === 'globe' ? '🌐' : s.icon === 'message' ? '💬' : s.icon === 'code' ? '💻' : '📁'}</div><div className="skill-info"><div className="skill-title"><strong>{s.name}</strong> <span className="rating">★ {s.rating}</span></div><p>{s.desc}</p><div className="skill-meta"><span>↓ {s.downloads}</span><span>⏱ {s.updated}</span></div></div><button className="install-btn">Install →</button></div>)}
+            {skills.map((s) => (
+              <div key={s.name} className="skill-item">
+                <div className="skill-icon">{s.icon || '🧠'}</div>
+                <div className="skill-info">
+                  <div className="skill-title">
+                    <strong>{s.name}</strong>
+                    <span className="rating">★ {s.rating}</span>
+                  </div>
+                  <p>{s.desc}</p>
+                  <div className="skill-meta">
+                    <span>↓ {s.downloads}</span>
+                    <span>⏱ {s.updated}</span>
+                  </div>
+                </div>
+                <button className="install-btn">Install →</button>
+              </div>
+            ))}
           </div>
-          <div className="skills-footer"><span>6 of 6 skills</span><button>Browse marketplace →</button></div>
+          <div className="skills-footer">
+            <span>{skills.length} skills available</span>
+            <button>Browse marketplace →</button>
+          </div>
         </div>
         <div className="memory-card">
           <h3>Memory</h3>
@@ -278,68 +297,20 @@ function SkillsPage({ skills, memory }) {
           <div className="memory-search"><span>🔍</span><input type="text" placeholder="Search memory..." /></div>
         </div>
       </div>
-    </section>
-  );
-}
-
-function SchedulerPage({ data }) {
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
-  return (
-    <section className="scheduler-view animation-fade">
-      <div className="scheduler-grid">
-        <div className="scheduler-main">
-          <h3>Scheduler</h3>
-          <p className="page-desc">Proactive tasks, cron jobs, and failure alerts—on a timeline.</p>
-          <div className="calendar-card">
-            <div className="calendar-header"><strong>{data.currentMonth}</strong><span>⏱ {data.timezone}</span></div>
-            <div className="calendar-grid">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className="cal-head">{d}</div>)}
-              {days.map(d => <div key={d} className={`cal-day ${d === data.selectedDay ? 'selected' : ''}`}>{d}</div>)}
-            </div>
-          </div>
-          <div className="timeline-section">
-            <div className="timeline-label">📁 This Week</div>
-            <div className="timeline-row"><span className="cat reports">● Reports</span><div className="gantt-bars"><div className="gantt-bar reports" style={{ left: '0%', width: '20%' }}>Weekly</div><div className="gantt-bar reports" style={{ left: '45%', width: '25%' }}>Monthly</div></div></div>
-            <div className="timeline-row"><span className="cat backups">● Backups</span><div className="gantt-bars"><div className="gantt-bar backups" style={{ left: '15%', width: '10%' }}>Daily</div><div className="gantt-bar backups" style={{ left: '80%', width: '15%' }}>Full</div></div></div>
-            <div className="timeline-row"><span className="cat alerts">● Alerts</span><div className="gantt-bars"><div className="gantt-bar alerts" style={{ left: '25%', width: '45%' }}>Monitoring</div></div></div>
-          </div>
-          <div className="failed-notice">⏱ {data.failedTasks} tasks failed in the last 24h <button>View</button></div>
+      <div className="skills-index">
+        <div className="skills-index-head">
+          <h3>Full skill index</h3>
+          <p className="page-desc">Auto-synced from workspace/skills.</p>
         </div>
-        <div className="metrics-sidebar">
-          <h3>Metrics</h3>
-          <p className="page-desc">Tasks, latency, and channel activity.</p>
-          <div className="metric-block"><span>Tasks Completed (7d)</span><strong>{data.metrics.tasksCompleted}</strong></div>
-          <div className="metric-block"><span>Avg Response Time (ms)</span><strong>{data.metrics.avgResponseTime}ms</strong></div>
-          <div className="channel-activity"><h4>Channel Activity</h4>{data.metrics.channelActivity.map(c => <div key={c.name} className="channel-row"><span>{c.name}</span><div className="channel-bar"><div className="channel-fill" style={{ width: `${c.percent}%` }}></div></div><span>{c.percent}%</span></div>)}</div>
+        <div className="skill-chip-row">
+          {skills.map((skill) => (
+            <span key={skill.name} className="skill-chip">{skill.icon || '🧠'} {skill.name}</span>
+          ))}
         </div>
       </div>
     </section>
   );
 }
-
-function SecurityPage({ data }) {
-  return (
-    <section className="security-view animation-fade">
-      <div className="security-grid">
-        <div className="security-main">
-          <h3>Security</h3>
-          <p className="page-desc">Audit log, permission grants, and sandbox events.</p>
-          <div className="activity-map"><div className="map-header"><span>Activity Map</span><span className="monitoring">● Monitoring</span></div><div className="map-visual">{data.activityMap.map((v, i) => <div key={i} className="map-bar" style={{ height: `${v * 3}px` }}></div>)}</div></div>
-          <div className="audit-section"><div className="audit-header"><span>○ Audit Log</span><button>Export</button></div><table className="audit-table"><thead><tr><th>ACTION</th><th>TIME</th><th>DETAIL</th><th>STATUS</th></tr></thead><tbody>{data.auditLog.map((a, i) => <tr key={i}><td className="action-cell">{a.action}</td><td>{a.time}</td><td>{a.detail}</td><td className="status-cell">✓ {a.status}</td></tr>)}</tbody></table></div>
-          <div className="security-stats"><div className="sec-stat"><strong className="green">{data.stats.blockRate}</strong><span>Block Rate</span></div><div className="sec-stat"><strong>{data.stats.breaches}</strong><span>Breaches</span></div><div className="sec-stat"><strong className="green">{data.stats.logRetention}</strong><span>Log Retention</span></div></div>
-        </div>
-        <div className="team-sidebar">
-          <h3>Team</h3>
-          <p className="page-desc">Switch agents, compare health, and share policies.</p>
-          <div className="team-list">{data.team.map(t => <div key={t.name} className="team-card"><div className="team-header"><strong>{t.name}</strong><span className={`status-badge ${t.status === 'Online' ? 'online' : 'maint'}`}>{t.status}</span></div><div className="team-stats"><div><span>Uptime</span><strong>{t.uptime}</strong></div><div><span>Tasks</span><strong>{t.tasks}</strong></div><div><span>Health</span><strong className="green">{t.health}</strong></div></div></div>)}</div>
-          <div className="policies-section"><h4>🔗 Shared Policies</h4>{data.policies.map(p => <div key={p.name} className="policy-row"><span>{p.name}</span><span className={p.value === 'enabled' || p.value === '90 days' ? 'green' : p.value === 'disabled' ? 'red' : 'muted'}>{p.value}</span></div>)}</div>
-          <button className="add-agent-btn">+ Add Agent</button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 const styles = `
 :root { --ink-blue: #003366; --ink-blue-muted: #4d7094; --ink-blue-light: #f0f6ff; --accent-blue: #0066cc; --border: #e2e8f0; --bg-main: #fcfcfc; }
 body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg-main); color: #1a1a1a; -webkit-font-smoothing: antialiased; }
@@ -587,6 +558,11 @@ body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(-
 .memory-content pre { font-size: 0.75rem; color: var(--ink-blue); white-space: pre-wrap; margin: 0; font-family: 'Monaco', monospace; }
 .memory-search { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: 0.5rem; margin-top: 1rem; }
 .memory-search input { border: none; background: none; flex: 1; font-size: 0.8rem; outline: none; }
+
+  .skills-index { margin-top: 2rem; background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; }
+  .skills-index-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+  .skill-chip-row { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .skill-chip { padding: 0.35rem 0.9rem; border-radius: 999px; background: #f1f5f9; font-size: 0.8rem; color: #475569; border: 1px solid transparent; font-weight: 600; }
 
 /* Scheduler */
 .scheduler-view { }
