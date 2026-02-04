@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { buildWorkspaceData } from '../lib/workspace-data';
 
 const navSections = [
@@ -68,128 +68,119 @@ export default function Home(props) {
   );
 }
 
-function OverviewPage({ data, trace, logs }) {
-  const terminalStatus = { status: 'Running', command: 'npm run dev', uptime: '29m', pid: '12847' };
-  const tokenUsage = { today: '124K', month: '4.2M', budget: '5M', percent: 84 };
-  const systemHealth = [
-    { name: 'CPU', value: 34 },
-    { name: 'Memory', value: 62 },
-    { name: 'Storage', value: 45 },
-    { name: 'Network', value: 78 }
-  ];
-  const liveEvents = [
-    { icon: '✉️', text: 'Inbox cleared 5 emails', time: '2m ago', status: 'done' },
-    { icon: '🔔', text: 'Reminder sent to calendar', time: '5m ago', status: 'done' },
-    { icon: '🌐', text: 'Browser task: research AI trends', time: '12m ago', status: 'done' },
-    { icon: '💾', text: 'Memory synced: user_prefs.md', time: '18m ago', status: 'done' },
-    { icon: '⚡', text: 'Shell exec: backup_script.sh', time: '25m ago', status: 'done' }
-  ];
+function OverviewPage({ data = {}, trace = [], logs = [] }) {
+  const hero = data.hero || {};
+  const metrics = data.metrics || [];
+  const liveEvents = data.liveEvents || [];
+  const terminalStatus = {
+    command: liveEvents[0]?.text || 'codex exec -- status',
+    status: liveEvents.length ? 'Live' : 'Idle',
+    uptime: liveEvents.length ? Math.max(5, liveEvents.length * 3) + 'm' : '—',
+    pid: liveEvents.length ? '0x' + (liveEvents.length * 53).toString(16) : '0000'
+  };
+  const terminalLines = liveEvents.map((event, i) => ({
+    ...event,
+    id: `${event.text}-${i}`
+  }));
+  const chatLines = logs.map((log, i) => ({
+    ...log,
+    id: `${log.time}-${i}`
+  }));
 
   return (
     <section className="overview-view-new">
       <div className="ov-hero-row">
         <div className="ov-hero">
-          <div className="hero-dots"><span></span><span></span><span></span></div>
-          <h1>{data.hero.title}</h1>
-          <p>{data.hero.desc}</p>
+          <h1>{hero.title ?? 'Kid Live Control'}</h1>
+          <p>{hero.desc ?? "Real-time signals from Richie's Codex workflows."}</p>
+          <div className="hero-dots">
+            {metrics.slice(0, 3).map((metric) => (
+              <span key={metric.label} title={`${metric.label}: ${metric.value}`}></span>
+            ))}
+          </div>
         </div>
         <div className="ov-quick-stats">
-          {data.metrics.map(m => (
-            <div key={m.label} className="ov-stat">
-              <strong>{m.value}</strong>
-              <span>{m.label}</span>
-              <small className={m.type}>{m.trend}</small>
+          {metrics.map((metric) => (
+            <div key={metric.label} className="ov-stat">
+              <strong>{metric.value}</strong>
+              <span>{metric.label}</span>
+              <small className={metric.type === 'down' ? 'down' : 'up'}>{metric.trend}</small>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="ov-main-grid">
-        <div className="ov-col-left">
-          <div className="ov-panel live-activity-panel">
-            <div className="panel-header"><h4>🔴 Live Activity</h4><span className="live-badge">● Live</span></div>
-            <div className="live-feed">
-              {liveEvents.map((e, i) => (
-                <div key={i} className="feed-item">
-                  <span className="feed-icon">{e.icon}</span>
-                  <div className="feed-content">
-                    <strong>{e.text}</strong>
-                    <span>{e.time}</span>
-                  </div>
-                  <span className="feed-status done">✓</span>
-                </div>
-              ))}
+      <div className="console-grid">
+        <div className="terminal-panel">
+          <div className="panel-header">
+            <h4>Live Kid Console</h4>
+            <span className="live-badge">● Live</span>
+          </div>
+          <div className="terminal-info">
+            <div className="term-row">
+              <span>Command</span>
+              <code>{terminalStatus.command}</code>
+            </div>
+            <div className="term-row">
+              <span>Status</span>
+              <strong className="green">{terminalStatus.status}</strong>
+            </div>
+            <div className="term-row">
+              <span>Uptime</span>
+              <strong>{terminalStatus.uptime}</strong>
+            </div>
+            <div className="term-row">
+              <span>PID</span>
+              <code>{terminalStatus.pid}</code>
             </div>
           </div>
-
-          <div className="ov-panel decision-panel">
-            <div className="panel-header"><h4>🧠 Decision Trace</h4></div>
-            <div className="trace-feed">
-              {trace.map(t => (
-                <div key={t.id} className="trace-row">
-                  <span className={`trace-type ${t.type}`}>{t.type}</span>
-                  <p>{t.content}</p>
+          <div className="console-feed">
+            {terminalLines.length ? (
+              terminalLines.map((event) => (
+                <div key={event.id} className="console-line">
+                  <span className="console-time">{event.time}</span>
+                  <span className="console-icon">{event.icon}</span>
+                  <span className="console-text">{event.text}</span>
                 </div>
-              ))}
-            </div>
+              ))
+            ) : (
+              <p className="console-empty">No live events yet—workspace clean.</p>
+            )}
           </div>
         </div>
-
-        <div className="ov-col-right">
-          <div className="ov-panel terminal-panel">
-            <div className="panel-header"><h4>💻 Terminal Status</h4><span className="status-online">● Online</span></div>
-            <div className="terminal-info">
-              <div className="term-row"><span>Command</span><code>{terminalStatus.command}</code></div>
-              <div className="term-row"><span>Status</span><strong className="green">{terminalStatus.status}</strong></div>
-              <div className="term-row"><span>Uptime</span><strong>{terminalStatus.uptime}</strong></div>
-              <div className="term-row"><span>PID</span><code>{terminalStatus.pid}</code></div>
-            </div>
+        <div className="chat-panel">
+          <div className="panel-header">
+            <h4>Live Kid Log</h4>
+            <span className="live-dot">● Streaming</span>
           </div>
-
-          <div className="ov-panel token-panel">
-            <div className="panel-header"><h4>◎ Token Usage</h4></div>
-            <div className="token-stats">
-              <div className="token-main">
-                <strong>{tokenUsage.month}</strong>
-                <span>/ {tokenUsage.budget} this month</span>
-              </div>
-              <div className="token-bar"><div className="token-fill" style={{ width: `${tokenUsage.percent}%` }}></div></div>
-              <div className="token-detail">
-                <span>Today: <strong>{tokenUsage.today}</strong></span>
-                <span>{tokenUsage.percent}% of budget</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="ov-panel health-panel">
-            <div className="panel-header"><h4>📊 System Health</h4><span className="green">All Good</span></div>
-            <div className="health-grid">
-              {systemHealth.map(s => (
-                <div key={s.name} className="health-item">
-                  <div className="health-label"><span>{s.name}</span><strong>{s.value}%</strong></div>
-                  <div className="health-bar"><div className="health-fill" style={{ width: `${s.value}%`, background: s.value > 70 ? '#f59e0b' : '#a3e635' }}></div></div>
+          <div className="chat-list">
+            {chatLines.length ? (
+              chatLines.map((log) => (
+                <div key={log.id} className="chat-row">
+                  <span className="chat-time">{log.time}</span>
+                  <div>
+                    <strong>{log.role}</strong>
+                    <p>{log.text}</p>
+                  </div>
                 </div>
-              ))}
-            </div>
+              ))
+            ) : (
+              <p className="console-empty">No chat notes recorded yet.</p>
+            )}
           </div>
-
-          <div className="ov-panel logs-panel">
-            <div className="panel-header"><h4>📋 Recent Logs</h4></div>
-            <div className="logs-mini">
-              {logs.map((log, i) => (
-                <div key={i} className="log-mini-row">
-                  <span className="log-time">{log.time}</span>
-                  <span className="log-text">{log.text}</span>
-                </div>
-              ))}
-            </div>
+          <div className="trace-feed">
+            {trace.map((item) => (
+              <div key={item.id} className="trace-row">
+                <span className={`trace-type ${item.type}`}>{item.type}</span>
+                <p>{item.content}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
     </section>
   );
 }
-
 function UsagePage({ data }) {
   return (
     <section className="usage-view animation-fade">
@@ -419,6 +410,22 @@ body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(-
 .trace-type.tool { background: #fef3c7; color: #92400e; }
 .trace-type.action { background: #dcfce7; color: #15803d; }
 .trace-row p { flex: 1; font-size: 0.8rem; color: var(--ink-blue); margin: 0; }
+
+.console-grid { display: grid; grid-template-columns: 1.45fr 1fr; gap: 1.25rem; }
+.terminal-panel, .chat-panel { background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+.console-feed { display: flex; flex-direction: column; gap: 0.45rem; max-height: 220px; overflow-y: auto; }
+.console-line { display: grid; grid-template-columns: 70px 30px 1fr; gap: 0.5rem; font-size: 0.8rem; align-items: center; }
+.console-time { color: #64748b; font-size: 0.7rem; }
+.console-icon { font-size: 1.1rem; }
+.console-text { color: var(--ink-blue); }
+.console-empty { margin: 0; font-size: 0.8rem; color: #94a3b8; }
+.chat-list { display: flex; flex-direction: column; gap: 0.75rem; max-height: 220px; overflow-y: auto; }
+.chat-row { display: flex; gap: 0.75rem; align-items: flex-start; }
+.chat-time { min-width: 40px; color: #94a3b8; font-size: 0.72rem; }
+.chat-row strong { color: var(--ink-blue); font-size: 0.78rem; }
+.chat-row p { margin: 0; color: var(--ink-blue); font-size: 0.75rem; }
+.trace-feed { max-height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; }
+
 
 .terminal-info { display: flex; flex-direction: column; gap: 0.5rem; }
 .term-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; padding: 0.25rem 0; }
