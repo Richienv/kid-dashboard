@@ -1,0 +1,14 @@
+Core "Must-Have" Live Dashboard FeaturesReal-time usage & cost monitoring — Track API calls, token usage, and spending (especially with paid models like Claude/OpenAI) to avoid surprise bills. Community members have built open-source cost monitors/dashboards specifically for this.
+Agent health & status overview — Live indicators for connected channels, running skills, memory status, proactive tasks, errors, and uptime (like a health check page).
+Live activity feed / logs — Streaming recent actions, conversations, skill executions, and proactive pings (e.g., "Inbox cleared 5 emails", "Reminder sent", "Browser task completed").
+Skill management with search & stats — Browse/install community skills (there are 500+ in repos like awesome-openclaw-skills), see usage frequency, ratings, or last updated.
+Memory & preferences viewer/editor — Searchable view of persistent memory (stored as Markdown/files), edit user preferences/instructions directly.
+
+Advanced / "Make It So Good" Community FavoritesProactive task & cron scheduler UI — Visual calendar/timeline for scheduled jobs, with drag-drop, previews, and failure alerts.
+Metrics & visualizations — Graphs for daily/weekly activity (tasks completed, channels used, model performance, response times). Some users add Prometheus/Grafana integration for fancier charts.
+Security & audit log — Detailed logs of executed commands/shell access, permission grants, sandbox escapes attempts — crucial since OpenClaw has powerful system access.
+Multi-agent / team views — If running multiple agents (e.g., personal + family/company), switch between them or see shared overviews.
+Custom widgets / embeddables — Integrate into Home Assistant dashboards, Notion, or personal sites for voice control, smart home tie-ins, or quick glances.
+Notifications center — Aggregated alerts from the agent (e.g., "Price drop on X", "Flight check-in ready") with acknowledge/snooze.
+Performance tweaks UI — Adjust sandbox levels, model selection, concurrency, or voice/wake-word settings live.
+
