@@ -54,7 +54,7 @@ export default function Home(props) {
           </header>
 
           <div className="workspace-content">
-            {activeSection === 'overview' && <OverviewPage data={overview} trace={decisionTrace} logs={chatLogs} activeSkills={activeSkills} buddyLog={overview.buddyLog} thesisSummary={overview.thesisSummary} />}
+            {activeSection === 'overview' && <OverviewPage data={overview} trace={decisionTrace} logs={chatLogs} activeSkills={activeSkills} buddyLog={overview.buddyLog} thesisSummary={overview.thesisSummary} nextMove={overview.nextMove} />}
             {activeSection === 'usage' && <UsagePage data={usage} />}
             {activeSection === 'health' && <HealthPage data={health} />}
             {activeSection === 'skills' && <SkillsPage skills={skills} memory={memory} activeSkills={activeSkills} />}
@@ -68,7 +68,7 @@ export default function Home(props) {
   );
 }
 
-function OverviewPage({ data = {}, trace = [], logs = [], activeSkills = [], buddyLog = [], thesisSummary = '' }) {
+function OverviewPage({ data = {}, trace = [], logs = [], activeSkills = [], buddyLog = [], thesisSummary = '', nextMove = '' }) {
   const hero = data.hero || {};
   const metrics = data.metrics || [];
   const liveEvents = data.liveEvents || [];
@@ -123,6 +123,11 @@ function OverviewPage({ data = {}, trace = [], logs = [], activeSkills = [], bud
         ) : (
           <p className="muted">No check-ins logged yet.</p>
         )}
+      </div>
+
+      <div className="next-move-panel">
+        <div className="panel-header"><h4>Next move</h4></div>
+        <p className="next-move-text">{nextMove}</p>
       </div>
       <div className="thesis-panel">
         <div className="panel-header"><h4>Thesis tracker snapshot</h4></div>
@@ -395,7 +400,9 @@ body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(-
 
   .active-skills-panel { background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1rem; }
   .active-skills-list { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.buddy-panel, .thesis-panel { background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.buddy-panel,   .next-move-panel { background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .next-move-text { margin: 0; font-size: 0.85rem; color: #1e293b; }
+.thesis-panel { background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1rem; }
 .buddy-log-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.4rem; }
 .buddy-log-list li { font-size: 0.8rem; color: #1e293b; }
 .thesis-summary { background: #f8fafc; border-radius: 0.75rem; padding: 0.75rem; font-size: 0.75rem; color: #1e293b; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
