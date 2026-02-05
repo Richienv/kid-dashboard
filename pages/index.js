@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { buildWorkspaceData } from '../lib/workspace-data';
 
 const navSections = [
@@ -409,6 +409,7 @@ function SkillsPage({ skills, memory, activeSkills }) {
 }
 
 function SchedulerPage({ data }) {
+  const STORAGE_KEY = "clawd-scheduler-tasks";
   const flattenTasks = () => {
     const base = [];
     if (!data?.tasks) return base;
@@ -434,6 +435,24 @@ function SchedulerPage({ data }) {
     note: '',
   });
   const [focusNote, setFocusNote] = useState('Atur fokus utama agar otomatisasi selaras.');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length) setTasks(parsed);
+      } catch (err) {
+        console.warn('scheduler load error', err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  }, [tasks]);
 
   const nextFocus = useMemo(() => {
     if (!tasks.length) return null;
