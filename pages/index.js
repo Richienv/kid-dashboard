@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { buildWorkspaceData } from '../lib/workspace-data';
 
 const navSections = [
@@ -296,6 +296,9 @@ function HealthPage({ data }) {
 
 function SkillsPage({ skills, memory, activeSkills }) {
   const [hint, setHint] = useState('');
+  const [skillQuery, setSkillQuery] = useState('');
+  const [memoryQuery, setMemoryQuery] = useState('');
+  const [memoryHint, setMemoryHint] = useState('');
   const activeNames = new Set(activeSkills.map((skill) => skill.name));
   const handleRefresh = (skill) => {
     const command = skill.refreshCommand || `codex exec -- "cd ../skills/${skill.name} && git pull"`;
@@ -306,6 +309,31 @@ function SkillsPage({ skills, memory, activeSkills }) {
       return;
     }
     setHint(`Copy this command: ${command}`);
+  };
+  const filteredSkills = useMemo(() => {
+    const query = skillQuery.trim().toLowerCase();
+    if (!query) return skills;
+    return skills.filter((skill) => {
+      const name = (skill.name || '').toLowerCase();
+      const desc = (skill.desc || '').toLowerCase();
+      return name.includes(query) || desc.includes(query);
+    });
+  }, [skills, skillQuery]);
+  const memoryLines = memory.content ? memory.content.split('\n') : [];
+  const filteredMemoryLines = useMemo(() => {
+    const query = memoryQuery.trim().toLowerCase();
+    if (!query) return memoryLines;
+    return memoryLines.filter((line) => line.toLowerCase().includes(query));
+  }, [memoryLines, memoryQuery]);
+  const handleMemoryReset = () => {
+    setMemoryQuery('');
+    setSkillQuery('');
+    setMemoryHint('Memory search reset.');
+    setTimeout(() => setMemoryHint(''), 2500);
+  };
+  const handleMemorySave = () => {
+    setMemoryHint('Memory saved (mock).');
+    setTimeout(() => setMemoryHint(''), 2500);
   };
   return (
     <section className="skills-view animation-fade">
@@ -320,9 +348,9 @@ function SkillsPage({ skills, memory, activeSkills }) {
               <span className="hint-text">{hint}</span>
             </div>
           </div>
-          <div className="search-box"><span>🔍</span><input type="text" placeholder="Search installed skills..." /></div>
+          <div className="search-box"><span>🔍</span><input value={skillQuery} onChange={(event) => setSkillQuery(event.target.value)} type="text" placeholder="Search installed skills..." /></div>
           <div className="skill-list-grid">
-            {skills.map((skill) => {
+            {filteredSkills.length ? filteredSkills.map((skill) => {
               const isLive = activeNames.has(skill.name);
               const statusLabel = isLive ? 'Live now' : skill.status === 'aktif' ? 'Active' : 'Needs update';
               return (
@@ -345,15 +373,24 @@ function SkillsPage({ skills, memory, activeSkills }) {
                   </div>
                 </article>
               );
-            })}
+            }) : <p className="muted">No skills match that filter.</p>}
           </div>
         </div>
         <div className="memory-card">
           <h3>Memory</h3>
           <p className="page-desc">Persistent context stored as Markdown. Searchable. Editable.</p>
-          <div className="memory-actions"><span className="file-badge">{memory.currentFile}</span><button>↺ Reset</button><button className="save-btn">💾 Save</button></div>
-          <div className="memory-content"><pre>{memory.content}</pre></div>
-          <div className="memory-search"><span>🔍</span><input type="text" placeholder="Search memory..." /></div>
+          <div className="memory-actions">
+            <span className="file-badge">{memory.currentFile}</span>
+            {memoryHint && <span className="memory-hint">{memoryHint}</span>}
+            <div className="memory-action-buttons">
+              <button onClick={handleMemoryReset}>↺ Reset</button>
+              <button className="save-btn" onClick={handleMemorySave}>💾 Save</button>
+            </div>
+          </div>
+          <div className="memory-content">
+            <pre>{filteredMemoryLines.length ? filteredMemoryLines.join('\n') : 'No matching memory entries.'}</pre>
+          </div>
+          <div className="memory-search"><span>🔍</span><input value={memoryQuery} onChange={(event) => setMemoryQuery(event.target.value)} type="text" placeholder="Search memory..." /></div>
         </div>
       </div>
       <div className="skills-index">
@@ -370,6 +407,140 @@ function SkillsPage({ skills, memory, activeSkills }) {
     </section>
   );
 }
+
+function SchedulerPage({ data }) {
+  const flattenTasks = () => {
+    const base = [];
+    if (!data?.tasks) return base;
+    Object.entries(data.tasks).forEach(([category, items]) => {
+      (items || []).forEach((item) => {
+        base.push({
+          title: `${item.label || category} ${item.start ? `(${item.start}-${item.end || ''})` : ''}`.trim(),
+          due: item.start ? `2026-02-${String(item.start).padStart(2, '0')}` : '',
+          priority: 'medium',
+          note: item.label,
+          category,
+        });
+      });
+    });
+    return base;
+  };
+
+  const [tasks, setTasks] = useState(flattenTasks);
+  const [form, setForm] = useState({
+    title: '',
+    due: new Date().toISOString().split('T')[0],
+    priority: 'medium',
+    note: '',
+  });
+  const [focusNote, setFocusNote] = useState('Atur fokus utama agar otomatisasi selaras.');
+
+  const nextFocus = useMemo(() => {
+    if (!tasks.length) return null;
+    return [...tasks].sort((a, b) => {
+      if (!a.due) return 1;
+      if (!b.due) return -1;
+      return a.due.localeCompare(b.due);
+    })[0];
+  }, [tasks]);
+
+  const handleAddTask = (event) => {
+    event.preventDefault();
+    if (!form.title.trim()) return;
+    setTasks((prev) => [...prev, { ...form, title: form.title.trim() }]);
+    setForm({ ...form, title: '', note: '' });
+  };
+
+  const metrics = data?.metrics || {};
+
+  return (
+    <section className="scheduler-view animation-fade">
+      <div className="scheduler-grid">
+        <div className="scheduler-main">
+          <div className="focus-card">
+            <div className="panel-header">
+              <h3>Next focus</h3>
+              <span className="focus-status">{nextFocus ? `Due ${nextFocus.due || 'soon'}` : 'Tidak ada fokus'}</span>
+            </div>
+            {nextFocus ? (
+              <div>
+                <strong>{nextFocus.title}</strong>
+                <p>{nextFocus.note || 'Catatan fokus belum ditentukan.'}</p>
+              </div>
+            ) : (
+              <p>Tambahkan tugas agar muncul di kartu fokus.</p>
+            )}
+            <button className="focus-note-toggle" onClick={() => setFocusNote('Kita bisa atasi ini, jadi tetap tenang.')}>Reset reminder</button>
+            <p className="focus-note">{focusNote}</p>
+          </div>
+          <form className="quick-add-card" onSubmit={handleAddTask}>
+            <h4>Quick add task</h4>
+            <input
+              type="text"
+              placeholder="Judul tugas/fokus"
+              value={form.title}
+              onChange={(evt) => setForm({ ...form, title: evt.target.value })}
+            />
+            <input type="date" value={form.due} onChange={(evt) => setForm({ ...form, due: evt.target.value })} />
+            <select value={form.priority} onChange={(evt) => setForm({ ...form, priority: evt.target.value })}>
+              <option value="high">High urgency</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <textarea
+              placeholder="Catatan atau automation note"
+              value={form.note}
+              onChange={(evt) => setForm({ ...form, note: evt.target.value })}
+            ></textarea>
+            <button type="submit">Add task</button>
+          </form>
+          <div className="task-board">
+            <h4>Task backlog</h4>
+            {tasks.length ? (
+              tasks.map((task, idx) => (
+                <article key={`${task.title}-${idx}`} className="task-card">
+                  <div className="task-meta">
+                    <strong>{task.title}</strong>
+                    <span>{task.due || 'Tanpa due'} • {task.priority}</span>
+                  </div>
+                  <p>{task.note || 'Tidak ada catatan tambahan.'}</p>
+                </article>
+              ))
+            ) : (
+              <p className="muted">Belum ada tugas—coba tambahkan satu.</p>
+            )}
+          </div>
+        </div>
+        <aside className="scheduler-sidebar">
+          <div className="panel-header">
+            <h4>Scheduler metrics</h4>
+            <span className="focus-status">Realtime</span>
+          </div>
+          <div className="scheduler-stats">
+            <div>
+              <strong>{metrics.tasksCompleted || 0}</strong>
+              <p>tasks completed</p>
+            </div>
+            <div>
+              <strong>{metrics.avgResponseTime || 0}s</strong>
+              <p>avg response</p>
+            </div>
+            <div>
+              <strong>{data?.timezone || 'Asia/Shanghai'}</strong>
+              <p>timezone</p>
+            </div>
+          </div>
+          <div className="scheduler-card">
+            <h4>Automation idea</h4>
+            <p>Integrate quick tasks with Kidd automation so each focus inline nempel ke prompt-creator.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+
 const styles = `
 :root { --ink-blue: #003366; --ink-blue-muted: #4d7094; --ink-blue-light: #f0f6ff; --accent-blue: #0066cc; --border: #e2e8f0; --bg-main: #fcfcfc; }
 body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg-main); color: #1a1a1a; -webkit-font-smoothing: antialiased; }
@@ -638,6 +809,8 @@ body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(-
 .memory-card h3 { font-size: 1.25rem; font-weight: 800; color: var(--ink-blue); margin: 0 0 0.5rem 0; }
 .memory-actions { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
 .file-badge { font-size: 0.75rem; background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 4px; }
+.memory-hint { font-size: 0.7rem; color: #475569; margin-left: 0.5rem; }
+.memory-action-buttons { margin-left: auto; display: flex; gap: 0.35rem; }
 .memory-actions button { background: none; border: none; font-size: 0.75rem; color: #64748b; cursor: pointer; }
 .save-btn { background: #d9f99d !important; color: #1a2e05 !important; padding: 0.25rem 0.5rem; border-radius: 4px; }
 .memory-content { background: #f8fafc; border-radius: 0.5rem; padding: 1rem; max-height: 300px; overflow-y: auto; }
@@ -672,6 +845,21 @@ body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(-
 .scheduler-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
 .scheduler-main { background: white; border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; }
 .scheduler-main h3 { font-size: 1.25rem; font-weight: 800; color: var(--ink-blue); margin: 0 0 0.5rem 0; }
+  .focus-card { background: #fff; border: 1px solid var(--border); border-radius: 1rem; padding: 1.25rem; margin-bottom: 1rem; }
+  .focus-card strong { font-size: 1.1rem; }
+  .focus-note { font-size: 0.75rem; color: #475569; margin-top: 0.5rem; }
+  .focus-note-toggle { margin-top: 0.5rem; border: none; background: none; color: var(--ink-blue); cursor: pointer; }
+  .quick-add-card { background: #fff; border: 1px solid var(--border); border-radius: 1rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+  .quick-add-card input, .quick-add-card select, .quick-add-card textarea { border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.9rem; }
+  .quick-add-card button { padding: 0.6rem; border: none; border-radius: 0.5rem; background: var(--ink-blue); color: white; font-weight: 600; cursor: pointer; }
+  .task-board { background: #fff; border: 1px solid var(--border); border-radius: 1rem; padding: 1rem; }
+  .task-card { border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.8rem; margin-bottom: 0.6rem; background: #f8fafc; }
+  .task-meta { display: flex; justify-content: space-between; margin-bottom: 0.25rem; font-size: 0.85rem; color: #475569; }
+  .scheduler-sidebar { background: #fff; border: 1px solid var(--border); border-radius: 1rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+  .scheduler-stats { display: flex; justify-content: space-between; gap: 0.5rem; }
+  .scheduler-stats div { flex: 1; background: #f8fafc; border-radius: 0.75rem; padding: 0.8rem; text-align: center; }
+  .scheduler-card { background: #f8fafc; border-radius: 0.75rem; padding: 1rem; }
+
 .calendar-card { border: 1px solid var(--border); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem; }
 .calendar-header { display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 0.9rem; }
 .calendar-header strong { color: var(--ink-blue); }
