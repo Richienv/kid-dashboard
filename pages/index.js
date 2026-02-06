@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import { buildWorkspaceData } from '../lib/workspace-data';
+import LiveAutomationsWidget from '../components/LiveAutomationsWidget';
 
 const navSections = [
   { key: 'overview', label: 'Overview' },
@@ -110,7 +111,7 @@ function OverviewPage({ data = {}, trace = [], logs = [], activeSkills = [], bud
         </div>
       </div>
 
-
+      <LiveAutomationsWidget />
 
       <div className="buddy-panel">
         <div className="panel-header"><h4>Buddy check-ins</h4></div>
